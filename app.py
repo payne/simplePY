@@ -9,12 +9,15 @@ Returns the rendered PDF as application/pdf.
 """
 
 import io
+import time
+from datetime import datetime, timezone
 import markdown
 from flask import Flask, request, send_file, jsonify
 from jinja2 import Environment, BaseLoader, TemplateError
 from weasyprint import HTML
 
 app = Flask(__name__)
+_start_time = time.monotonic()
 
 HTML_WRAPPER = """<!DOCTYPE html>
 <html>
@@ -36,6 +39,15 @@ HTML_WRAPPER = """<!DOCTYPE html>
 {body}
 </body>
 </html>"""
+
+
+@app.route("/")
+def index():
+    uptime_seconds = time.monotonic() - _start_time
+    return jsonify(
+        time_utc=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        uptime_seconds=round(uptime_seconds, 2),
+    )
 
 
 @app.route("/render", methods=["POST"])
